@@ -6,8 +6,6 @@ from backend.node.genvm.equivalence_principle import EquivalencePrinciple
 class Chargeback(IContract):
     def __init__(self) -> None:
         self.disputes = {}
-        self.disputes["1234"] = False
-
 
     async def file_chargeback(self, transaction_id: str, tos_url: str, reason: str) -> None:
         final_result = {}
@@ -33,7 +31,7 @@ class Chargeback(IContract):
 
             Respond with the following JSON format:
             {{
-                "chargeback": int, // The number should be 1 if the user reason is valid and the user reimboursed, zero otherwise
+                "chargeback": int, // The number should be 1 if the user reason is valid and the user reimboursed, 2 if their claim is rejected
             }}
             It is mandatory that you respond only using the JSON format above,
             nothing else. Don't include any other words or characters,
@@ -46,15 +44,12 @@ class Chargeback(IContract):
 
         result_json = json.loads(final_result["output"])
 
-        if result_json["chargeback"] == 1:
-            self.disputes[transaction_id] = True
-        else:
-            self.disputes[transaction_id] = False
+        self.disputes[transaction_id] = result_json["chargeback"]
 
         return result_json
     
-    def get_disputes(self) -> dict[str, bool]:
+    def get_disputes(self) -> dict[str, int]:
         return self.disputes
     
-    def get_dispute(self, transaction_id) -> bool:
-        return self.disputes[transaction_id]
+    def get_dispute(self, transaction_id) -> int:
+        return self.disputes.get(transaction_id, 0)

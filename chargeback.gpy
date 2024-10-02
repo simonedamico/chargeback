@@ -1,0 +1,60 @@
+import json
+from backend.node.genvm.icontract import IContract
+from backend.node.genvm.equivalence_principle import EquivalencePrinciple
+
+
+class Chargeback(IContract):
+    def __init__(self) -> None:
+        self.disputes = {}
+        self.disputes["1234"] = False
+
+
+    async def file_chargeback(self, transaction_id: str, tos_url: str, reason: str) -> None:
+        final_result = {}
+        async with EquivalencePrinciple(
+            result=final_result,
+            principle="The chargeback result should be the same",
+            comparative=True,
+        ) as eq:
+            web_data = await eq.get_webpage(tos_url, "text")
+            print(web_data)
+            task = f"""In the following web page you find the term of services of a merchant
+
+            Web page content:
+            {web_data}
+            End of web page data.
+
+            You are in charge of deciding wether a user reason for a chargeback is valid or not based on the term of services and
+            the reason provider by the user.
+
+            The reason provided by the user is:
+            {reason}
+            End of reason provided by the user.
+
+            Respond with the following JSON format:
+            {{
+                "chargeback": int, // The number should be 1 if the user reason is valid and the user reimboursed, zero otherwise
+            }}
+            It is mandatory that you respond only using the JSON format above,
+            nothing else. Don't include any other words or characters,
+            your output must be only JSON without any formatting prefix or suffix.
+            This result should be perfectly parseable by a JSON parser without errors.
+            """
+            result = await eq.call_llm(task)
+            print(result)
+            eq.set(result)
+
+        result_json = json.loads(final_result["output"])
+
+        if result_json["chargeback"] == 1:
+            self.disputes[transaction_id] = True
+        else:
+            self.disputes[transaction_id] = False
+
+        return result_json
+    
+    def get_disputes(self) -> dict[str, bool]:
+        return self.disputes
+    
+    def get_dispute(self, transaction_id) -> bool:
+        return self.disputes[transaction_id]

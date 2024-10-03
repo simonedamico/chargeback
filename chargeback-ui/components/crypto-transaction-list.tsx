@@ -15,6 +15,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { createAccount, createClient } from 'genlayer-js';
+import { simulator } from "genlayer-js/chains";
+
+type Address = `0x${string}` & {
+  length: 42;
+};
+
+const contractAddress = "0x057fC6074A7eD0f584e2E9720b70B76A6bD7d358" as Address;
+const account = createAccount();
+
+const config = { chain: simulator, account: account};
+const client = createClient(config);
+
+
 
 interface Transaction {
   id: string
@@ -41,12 +55,14 @@ export function CryptoTransactionListComponent() {
     setExpandedId(expandedId === id ? null : id)
   }
 
-  const handleReversal = (id: string) => {
+  async function handleReversal(id: string) { // Add 'async' keyword here
     setTransactions(transactions.map(t => 
       t.id === id ? { ...t, status: 'reversed' } : t
     ))
     setExpandedId(null)
     setReversalReason('')
+    const disputes = await client.readContract({account: account, address: contractAddress, functionName: 'get_disputes', args: []});
+    console.log(disputes);
   }
 
   return (

@@ -1,7 +1,7 @@
-import { CryptoTransactionListComponent } from "@/components/crypto-transaction-list";
+import { SnazzyChargebackInitiatorComponent } from "@/components/snazzy-chargeback-initiator";
 
 export default function Home() {
   return (
-    <CryptoTransactionListComponent />
+    <SnazzyChargebackInitiatorComponent />
   );
 }

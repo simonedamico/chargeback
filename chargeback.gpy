@@ -48,8 +48,8 @@ class Chargeback(IContract):
 
         return result_json
     
-    def get_disputes(self) -> dict[str, int]:
-        return self.disputes
+    def get_disputes(self) -> list[tuple[str, int]]:
+        return list(self.disputes.items())
     
     def get_dispute(self, transaction_id) -> int:
         return self.disputes.get(transaction_id, 0)

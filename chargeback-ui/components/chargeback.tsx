@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronDown, ChevronUp, DollarSign, Calendar, FileText, AlertCircle } from "lucide-react"
+import { ChevronDown, ChevronUp, DollarSign, Calendar, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 
 import { createAccount, createClient } from 'genlayer-js';
@@ -23,67 +22,67 @@ const account = createAccount();
 const config = { chain: simulator, account: account};
 const client = createClient(config);
 
+
+// Function to generate random alphanumeric string
+const generateRandomId = (length: number) => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+}
+
 // Mock data for transactions
 const mockTransactions = [
-  { id: 1, description: "Online Store Purchase", date: "2023-05-15", amount: 99.99, termsLink: "https://fitnessexperience.ca/pages/terms-of-service?srsltid=AfmBOorb3DdvR2QcMmNIcOv5Zbz_5EXLAEGbQxgbjIi5NzAvka4JUPIF" },
-  { id: 2, description: "Subscription Renewal", date: "2023-05-20", amount: 29.99, termsLink: "https://fitnessexperience.ca/pages/terms-of-service?srsltid=AfmBOorb3DdvR2QcMmNIcOv5Zbz_5EXLAEGbQxgbjIi5NzAvka4JUPIF" },
-  { id: 3, description: "Digital Download", date: "2023-05-25", amount: 19.99, termsLink: "https://fitnessexperience.ca/pages/terms-of-service?srsltid=AfmBOorb3DdvR2QcMmNIcOv5Zbz_5EXLAEGbQxgbjIi5NzAvka4JUPIF" },
+  { id: generateRandomId(10), description: "Online Store Purchase", date: "2023-05-15", amount: 99.99, termsLink: "https://fitnessexperience.ca/pages/terms-of-service?srsltid=AfmBOorb3DdvR2QcMmNIcOv5Zbz_5EXLAEGbQxgbjIi5NzAvka4JUPIF" },
+  { id: generateRandomId(10), description: "Subscription Renewal", date: "2023-05-20", amount: 29.99, termsLink: "https://example.com/terms2" },
+  { id: generateRandomId(10), description: "Digital Download", date: "2023-05-25", amount: 19.99, termsLink: "https://example.com/terms3" },
 ]
 
 // Mock API call for initiating chargeback
-const initiateChargeback = async (transactionId: number, reason: string, termsLink: string) => {
+const initiateChargeback = async (transactionId: string, reason: string, termsLink: string) => {
   await client.writeContract({account: account, address: contractAddress, functionName: 'file_chargeback', args: [transactionId, termsLink, reason], value: BigInt(0)});
+
   console.log(`Chargeback initiated for transaction ${transactionId}`)
   return { success: true }
 }
 
 // Mock API call for checking chargeback status
-const getChargebackStatus = async (transactionIds: number[]) => {
-  const disputes = await client.readContract({account: account, address: contractAddress, functionName: 'get_disputes', args: []});
-  console.log(disputes);
-  return disputes;
+const getChargebackStatus = async (transactionId: string) => {
+  const dispute = await client.readContract({account: account, address: contractAddress, functionName: 'get_dispute', args: [transactionId]});
+  console.log(dispute);
+  return dispute; // 0: pending, 1: successful, 2: denied
 }
 
 type Transaction = {
-  id: number
+  id: string
   description: string
   date: string
   amount: number
   termsLink: string
 }
 
-type ChargebackStatus = {
-  id: number
-  status: number
-}
-
-export function SnazzyChargebackInitiatorComponent() {
+export function ChargebackComponent() {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions)
-  const [expandedId, setExpandedId] = useState<number | null>(null)
-  const [chargebackReasons, setChargebackReasons] = useState<{ [key: number]: string }>({})
-  const [chargebackStatuses, setChargebackStatuses] = useState<{ [key: number]: number }>({})
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [chargebackReasons, setChargebackReasons] = useState<{ [key: string]: string }>({})
+  const [chargebackStatuses, setChargebackStatuses] = useState<{ [key: string]: number }>({})
 
   useEffect(() => {
-    const intervalId = setInterval(async () => {
-      const statuses = await getChargebackStatus(transactions.map(t => t.id))
-      console.log(statuses);
-      setChargebackStatuses(prevStatuses => {
-        const newStatuses = { ...prevStatuses }
-        statuses.forEach((status: ChargebackStatus) => {
-          newStatuses[status.id] = status.status
-        })
-        return newStatuses
-      })
+    const updateStatus = async (id: string) => {
+      const status = await getChargebackStatus(id)
+      setChargebackStatuses(prev => ({ ...prev, [id]: status }))
+    }
+
+    const intervalId = setInterval(() => {
+      transactions.forEach(transaction => updateStatus(transaction.id))
     }, 5000)
 
     return () => clearInterval(intervalId)
   }, [transactions])
 
-  const handleExpand = (id: number) => {
+  const handleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id)
   }
 
-  const handleReasonChange = (id: number, reason: string) => {
+  const handleReasonChange = (id: string, reason: string) => {
     setChargebackReasons(prev => ({ ...prev, [id]: reason }))
   }
 

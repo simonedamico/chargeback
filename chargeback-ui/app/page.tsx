@@ -1,7 +1,7 @@
-import { SnazzyChargebackInitiatorComponent } from "@/components/snazzy-chargeback-initiator";
+import { ChargebackComponent } from "@/components/chargeback";
 
 export default function Home() {
   return (
-    <SnazzyChargebackInitiatorComponent />
+    <ChargebackComponent />
   );
 }

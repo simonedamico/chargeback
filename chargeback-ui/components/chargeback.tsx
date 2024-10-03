@@ -16,7 +16,7 @@ type Address = `0x${string}` & {
   length: 42;
 };
 
-const contractAddress = "0x10225Dd9A6C72b8E10da5aF55E43B1c76f3eDe48" as Address;
+const contractAddress = "0xc59f6c55E67012071163c04BC4668C64a4274759" as Address;
 const account = createAccount();
 
 const config = { chain: simulator, account: account};
@@ -31,9 +31,9 @@ const generateRandomId = (length: number) => {
 
 // Mock data for transactions
 const mockTransactions = [
-  { id: generateRandomId(10), description: "Online Store Purchase", date: "2023-05-15", amount: 99.99, termsLink: "https://fitnessexperience.ca/pages/terms-of-service?srsltid=AfmBOorb3DdvR2QcMmNIcOv5Zbz_5EXLAEGbQxgbjIi5NzAvka4JUPIF" },
-  { id: generateRandomId(10), description: "Subscription Renewal", date: "2023-05-20", amount: 29.99, termsLink: "https://example.com/terms2" },
-  { id: generateRandomId(10), description: "Digital Download", date: "2023-05-25", amount: 19.99, termsLink: "https://example.com/terms3" },
+  { id: generateRandomId(10), description: "The Gym", date: "2023-05-15", amount: 99.99, termsLink: "https://fitnessexperience.ca/pages/terms-of-service?srsltid=AfmBOorb3DdvR2QcMmNIcOv5Zbz_5EXLAEGbQxgbjIi5NzAvka4JUPIF" },
+  { id: generateRandomId(10), description: "OnlyTurboFans", date: "2023-05-20", amount: 29.99, termsLink: "https://example.com/terms2" },
+  { id: generateRandomId(10), description: "Burnt Coffee", date: "2023-05-25", amount: 19.99, termsLink: "https://example.com/terms3" },
 ]
 
 // Mock API call for initiating chargeback
